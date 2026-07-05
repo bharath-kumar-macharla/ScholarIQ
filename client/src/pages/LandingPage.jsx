@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { ArrowRight, GraduationCap, Building2, ChevronRight, Mail, Phone, MapPin, Sparkles, Send } from 'lucide-react';
+import logoImg from '../assets/logo.jpg';
 
 export default function LandingPage() {
   const canvasRef = useRef(null);
@@ -59,7 +60,7 @@ export default function LandingPage() {
       {/* ───────────────── NAVBAR ───────────────── */}
       <header className="relative z-20 flex items-center justify-between px-6 md:px-12 py-4 border-b border-slate-800/50 bg-[#06080f]/80 backdrop-blur-lg">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#06d6a0] to-[#4cc9f0] flex items-center justify-center font-bold text-[#06080f] text-base">S</div>
+          <img src={logoImg} alt="ScholarIQ Logo" className="w-9 h-9 rounded-xl object-cover" />
           <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">ScholarIQ</span>
         </div>
         <div className="flex items-center gap-3">
@@ -148,7 +149,7 @@ export default function LandingPage() {
                 <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
                 <div className="w-3 h-3 rounded-full bg-green-500/70" />
                 <div className="ml-3 flex items-center gap-2 text-xs text-slate-500">
-                  <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#06d6a0] to-[#4cc9f0] flex items-center justify-center text-[#06080f] font-bold text-[9px]">S</div>
+                  <img src={logoImg} alt="ScholarIQ Logo" className="w-5 h-5 rounded-md object-cover" />
                   ScholarIQ
                 </div>
               </div>
@@ -221,7 +222,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="space-y-5">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#06d6a0] to-[#4cc9f0] flex items-center justify-center font-bold text-[#06080f] text-base">S</div>
+                <img src={logoImg} alt="ScholarIQ Logo" className="w-9 h-9 rounded-xl object-cover" />
                 <span className="text-xl font-bold tracking-tight">ScholarIQ</span>
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">

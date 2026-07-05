@@ -1,7 +1,7 @@
 import { Outlet, Link } from 'react-router-dom';
 import ParticleBackground from '../shared/ParticleBackground';
-import { GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logoImg from '../../assets/logo.jpg';
 
 export default function AuthLayout() {
   return (
@@ -14,10 +14,8 @@ export default function AuthLayout() {
 
       <div className="z-10 w-full max-w-md p-6">
         <div className="flex justify-center mb-8">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#06d6a0] to-[#4cc9f0] flex items-center justify-center text-[#06080f]">
-              <GraduationCap size={24} strokeWidth={2.5} />
-            </div>
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logoImg} alt="ScholarIQ Logo" className="w-10 h-10 rounded-xl object-cover" />
             <span className="text-2xl font-bold font-heading tracking-tight text-white">ScholarIQ</span>
           </Link>
         </div>

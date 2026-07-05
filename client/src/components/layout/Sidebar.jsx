@@ -10,6 +10,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import logoImg from '../../assets/logo.jpg';
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -46,10 +47,8 @@ export default function Sidebar() {
     <div className="w-64 bg-[#0d1117]/80 backdrop-blur-xl border-r border-slate-800 flex flex-col h-full shrink-0 relative hidden md:flex">
       {/* Logo */}
       <div className="h-20 flex items-center px-6 border-b border-slate-800/50">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#06d6a0] to-[#4cc9f0] flex items-center justify-center text-[#06080f]">
-            <GraduationCap size={20} strokeWidth={2.5} />
-          </div>
+        <Link to="/" className="flex items-center gap-3">
+          <img src={logoImg} alt="ScholarIQ Logo" className="w-8 h-8 rounded-lg object-cover" />
           <span className="text-xl font-bold font-heading tracking-tight text-white">ScholarIQ</span>
         </Link>
       </div>
