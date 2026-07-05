@@ -14,6 +14,7 @@ import ProviderRegister from './pages/auth/ProviderRegister';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import VerifyOTP from './pages/auth/VerifyOTP';
+import LandingPage from './pages/LandingPage';
 
 // Dashboard Pages
 import Dashboard from './pages/student/Dashboard';
@@ -54,8 +55,9 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/verify-otp" element={<VerifyOTP />} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
           </Route>
+          {/* Landing page at root, outside AuthLayout */}
+          <Route path="/" element={<LandingPage />} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
