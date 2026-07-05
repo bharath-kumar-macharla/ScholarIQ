@@ -5,6 +5,33 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken, generateV
 const { auth } = require('../middleware/auth');
 const { sendVerificationEmail, sendResetPasswordEmail } = require('../services/emailService');
 
+// GET /api/auth/test-smtp — Diagnostic endpoint to inspect SMTP errors on Render
+router.get('/test-smtp', async (req, res) => {
+  const nodemailer = require('nodemailer');
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    connectionTimeout: 10000, // 10 seconds timeout
+  });
+
+  try {
+    await transporter.verify();
+    res.json({ success: true, message: 'SMTP credentials and port are active and verified!' });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message, 
+      code: error.code,
+      suggestion: 'Render Free Tier blocks outbound SMTP traffic. If you see ETIMEDOUT, you must use SendGrid/Resend API or upgrade Render.'
+    });
+  }
+});
+
 // POST /api/auth/register — Student registration
 router.post('/register', async (req, res) => {
   try {
