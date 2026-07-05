@@ -10,6 +10,50 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+async function sendEmail({ to, subject, html }) {
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'ScholarIQ <onboarding@resend.dev>',
+          to: [to],
+          subject,
+          html,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Email sent via Resend API successfully:', data.id);
+        return true;
+      } else {
+        console.error('Resend API error response:', data);
+      }
+    } catch (error) {
+      console.error('Failed to send email via Resend API:', error.message);
+    }
+  }
+
+  // Fallback / default to SMTP
+  try {
+    await transporter.sendMail({
+      from: `"ScholarIQ" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log('Email sent via SMTP successfully to:', to);
+    return true;
+  } catch (error) {
+    console.error('SMTP send error:', error.message);
+    return false;
+  }
+}
+
 async function sendVerificationEmail(email, name, otp) {
   const html = `
     <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #0d1117; color: #e6edf3; padding: 40px; border-radius: 16px;">
@@ -29,18 +73,11 @@ async function sendVerificationEmail(email, name, otp) {
       <p style="color: #484f58; font-size: 12px; margin-top: 30px; border-t: 1px solid #21262d; padding-top: 20px; text-align: center;">If you didn't create a ScholarIQ account, you can safely ignore this email.</p>
     </div>
   `;
-  try {
-    await transporter.sendMail({
-      from: `"ScholarIQ" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: `Verify your ScholarIQ account - ${otp}`,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error('Email send error:', error.message);
-    return false;
-  }
+  return sendEmail({
+    to: email,
+    subject: `Verify your ScholarIQ account - ${otp}`,
+    html,
+  });
 }
 
 async function sendResetPasswordEmail(email, name, token) {
@@ -58,18 +95,11 @@ async function sendResetPasswordEmail(email, name, token) {
       <p style="color: #484f58; font-size: 13px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
     </div>
   `;
-  try {
-    await transporter.sendMail({
-      from: `"ScholarIQ" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Reset your ScholarIQ password',
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error('Email send error:', error.message);
-    return false;
-  }
+  return sendEmail({
+    to: email,
+    subject: 'Reset your ScholarIQ password',
+    html,
+  });
 }
 
 module.exports = { sendVerificationEmail, sendResetPasswordEmail };
