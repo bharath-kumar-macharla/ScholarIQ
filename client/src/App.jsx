@@ -13,7 +13,7 @@ import Register from './pages/auth/Register';
 import ProviderRegister from './pages/auth/ProviderRegister';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
-import VerifyEmail from './pages/auth/VerifyEmail';
+import VerifyOTP from './pages/auth/VerifyOTP';
 
 // Dashboard Pages
 import Dashboard from './pages/student/Dashboard';
@@ -53,7 +53,7 @@ function App() {
             <Route path="/register/provider" element={<ProviderRegister />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Route>
 

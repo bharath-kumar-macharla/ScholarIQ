@@ -74,6 +74,11 @@ export default function Login() {
       else navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to login');
+      if (err.response?.data?.requiresVerification) {
+        setTimeout(() => {
+          navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+        }, 3000);
+      }
     } finally {
       setLoading(false);
     }

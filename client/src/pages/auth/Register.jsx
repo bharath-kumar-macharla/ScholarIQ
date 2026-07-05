@@ -20,8 +20,8 @@ export default function Register() {
     setLoading(true);
     try {
       await register({ name, email, password }, false);
-      setSuccess('Registration successful! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setSuccess('Registration successful! Check your email for OTP verification...');
+      setTimeout(() => navigate(`/verify-otp?email=${encodeURIComponent(email)}`), 2000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to register');
     } finally {

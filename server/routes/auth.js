@@ -22,29 +22,22 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'An account with this email already exists.' });
     }
 
-    const verificationToken = generateVerificationToken();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const user = await User.create({
       name,
       email,
       password,
       role: 'student',
-      verificationToken,
-      verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+      verificationOTP: otp,
+      verificationOTPExpires: new Date(Date.now() + 15 * 60 * 1000), // 15m
     });
 
     // Send verification email (non-blocking)
-    sendVerificationEmail(email, name, verificationToken);
-
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-    user.refreshToken = refreshToken;
-    await user.save();
+    sendVerificationEmail(email, name, otp);
 
     res.status(201).json({
-      message: 'Registration successful. Please check your email to verify your account.',
-      user: user.toJSON(),
-      accessToken,
-      refreshToken,
+      message: 'Registration successful. Please check your email for the 6-digit OTP code to verify your account.',
+      email: user.email,
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -66,28 +59,21 @@ router.post('/register/provider', async (req, res) => {
       return res.status(409).json({ error: 'An account with this email already exists.' });
     }
 
-    const verificationToken = generateVerificationToken();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const user = await User.create({
       name,
       email,
       password,
       role: 'provider',
-      verificationToken,
-      verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      verificationOTP: otp,
+      verificationOTPExpires: new Date(Date.now() + 15 * 60 * 1000), // 15m
     });
 
-    sendVerificationEmail(email, name, verificationToken);
-
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-    user.refreshToken = refreshToken;
-    await user.save();
+    sendVerificationEmail(email, name, otp);
 
     res.status(201).json({
-      message: 'Provider registration successful. Please verify your email.',
-      user: user.toJSON(),
-      accessToken,
-      refreshToken,
+      message: 'Provider registration successful. Please check your email for the 6-digit OTP code to verify your account.',
+      email: user.email,
     });
   } catch (error) {
     console.error('Provider register error:', error);
@@ -107,6 +93,22 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    if (!user.isVerified) {
+      // Trigger a new OTP send if expired or missing
+      if (!user.verificationOTP || new Date() > user.verificationOTPExpires) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.verificationOTP = otp;
+        user.verificationOTPExpires = new Date(Date.now() + 15 * 60 * 1000);
+        await user.save();
+        sendVerificationEmail(user.email, user.name, otp);
+      }
+      return res.status(403).json({ 
+        error: 'Please verify your email address before logging in. A verification OTP has been sent to your email.', 
+        email: user.email,
+        requiresVerification: true
+      });
     }
 
     if (!user.password) {
@@ -183,26 +185,69 @@ router.post('/google', async (req, res) => {
   }
 });
 
-// GET /api/auth/verify/:token — Email verification
-router.get('/verify/:token', async (req, res) => {
+// POST /api/auth/verify-otp — Verify email using 6-digit OTP
+router.post('/verify-otp', async (req, res) => {
   try {
-    const user = await User.findOne({
-      verificationToken: req.params.token,
-      verificationTokenExpiry: { $gt: new Date() },
-    });
+    const { email, otp } = req.body;
 
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and OTP are required.' });
+    }
+
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: 'Invalid or expired verification link.' });
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'Account is already verified.' });
+    }
+
+    if (user.verificationOTP !== otp || new Date() > user.verificationOTPExpires) {
+      return res.status(400).json({ error: 'Invalid or expired OTP.' });
     }
 
     user.isVerified = true;
-    user.verificationToken = undefined;
-    user.verificationTokenExpiry = undefined;
+    user.verificationOTP = undefined;
+    user.verificationOTPExpires = undefined;
     await user.save();
 
-    res.json({ message: 'Email verified successfully!' });
+    res.json({ message: 'Email verified successfully! You can now login.' });
   } catch (error) {
+    console.error('Verify OTP error:', error);
     res.status(500).json({ error: 'Verification failed.' });
+  }
+});
+
+// POST /api/auth/resend-otp — Resend 6-digit OTP
+router.post('/resend-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'Account is already verified.' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.verificationOTP = otp;
+    user.verificationOTPExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save();
+
+    sendVerificationEmail(email, user.name, otp);
+
+    res.json({ message: 'A new 6-digit OTP has been sent to your email.' });
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    res.status(500).json({ error: 'Failed to resend OTP.' });
   }
 });
 

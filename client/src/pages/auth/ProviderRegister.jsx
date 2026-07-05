@@ -21,8 +21,8 @@ export default function ProviderRegister() {
     setLoading(true);
     try {
       await register({ name, email, password, orgName }, true);
-      setSuccess('Registration successful! Redirecting to Provider Dashboard...');
-      setTimeout(() => navigate('/provider/dashboard'), 2000);
+      setSuccess('Provider registration successful! Check your email for OTP verification...');
+      setTimeout(() => navigate(`/verify-otp?email=${encodeURIComponent(email)}`), 2000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to register as provider');
     } finally {
