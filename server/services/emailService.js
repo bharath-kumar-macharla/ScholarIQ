@@ -11,6 +11,35 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendEmail({ to, subject, html }) {
+  // Option 1: SendGrid API (HTTP, allows sending to any email from a verified single sender)
+  if (process.env.SENDGRID_API_KEY) {
+    try {
+      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: to }] }],
+          from: { email: process.env.EMAIL_USER || 'macharlabharathkumar123@gmail.com', name: 'ScholarIQ' },
+          subject,
+          content: [{ type: 'text/html', value: html }],
+        }),
+      });
+      if (response.ok) {
+        console.log('Email sent via SendGrid API successfully to:', to);
+        return true;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('SendGrid API error response:', errorData);
+      }
+    } catch (error) {
+      console.error('Failed to send email via SendGrid API:', error.message);
+    }
+  }
+
+  // Option 2: Resend API (HTTP, sandbox limited to your own registered email)
   if (process.env.RESEND_API_KEY) {
     try {
       const response = await fetch('https://api.resend.com/emails', {
@@ -38,7 +67,7 @@ async function sendEmail({ to, subject, html }) {
     }
   }
 
-  // Fallback / default to SMTP
+  // Option 3: Fallback / default to SMTP (Nodemailer)
   try {
     await transporter.sendMail({
       from: `"ScholarIQ" <${process.env.EMAIL_USER}>`,
