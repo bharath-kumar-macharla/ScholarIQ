@@ -92,6 +92,7 @@ router.post('/register/provider', async (req, res) => {
       email,
       password,
       role: 'provider',
+      orgName,
       verificationOTP: otp,
       verificationOTPExpires: new Date(Date.now() + 15 * 60 * 1000), // 15m
     });
@@ -369,6 +370,58 @@ router.post('/logout', auth, async (req, res) => {
     res.json({ message: 'Logged out successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'Logout failed.' });
+  }
+});
+
+// PUT /api/auth/settings
+// Update authenticated user account settings
+router.put('/settings', auth, async (req, res) => {
+  try {
+    const { name, orgName, currentPassword, newPassword, notifications } = req.body;
+    
+    // Find the user with password field selected (so we can verify)
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    // Update name if provided
+    if (name) user.name = name;
+    
+    // Update orgName if provided (only for providers)
+    if (orgName && user.role === 'provider') user.orgName = orgName;
+    
+    // Update notifications if provided
+    if (notifications) {
+      user.notifications = {
+        ...user.notifications,
+        ...notifications
+      };
+    }
+    
+    // Update password if provided
+    if (currentPassword && newPassword) {
+      if (user.googleId && !user.password) {
+        // User logged in with Google and hasn't set a local password yet
+        user.password = newPassword;
+      } else {
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+          return res.status(400).json({ error: 'Incorrect current password' });
+        }
+        if (newPassword.length < 6) {
+          return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+        }
+        user.password = newPassword;
+      }
+    }
+    
+    await user.save();
+    
+    // Convert to JSON (which deletes sensitive fields)
+    const updatedUser = user.toJSON();
+    res.json({ message: 'Settings updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Settings update error:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
   }
 });
 

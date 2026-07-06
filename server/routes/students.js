@@ -3,6 +3,9 @@ const router = express.Router();
 const { auth, authorize } = require('../middleware/auth');
 const StudentProfile = require('../models/StudentProfile');
 const User = require('../models/User');
+const Application = require('../models/Application');
+const SavedScholarship = require('../models/SavedScholarship');
+const Scholarship = require('../models/Scholarship');
 
 // Middleware to ensure route is accessed by a student
 router.use(auth, authorize('student'));
@@ -108,20 +111,64 @@ router.get('/dashboard', async (req, res) => {
   try {
     const profile = await StudentProfile.findOne({ userId: req.user.id });
     
-    // Return mock stats for now since we don't have Scholarships/Applications yet
+    // Fetch count of saved scholarships
+    const savedCount = await SavedScholarship.countDocuments({ studentId: req.user.id });
+    
+    // Fetch count of submitted applications
+    const appliedCount = await Application.countDocuments({ studentId: req.user.id });
+    
+    // Fetch saved scholarships to calculate upcoming deadlines
+    const savedList = await SavedScholarship.find({ studentId: req.user.id }).populate('scholarshipId');
+    const upcomingDeadlines = savedList.filter(item => 
+      item.scholarshipId && 
+      item.scholarshipId.deadline && 
+      new Date(item.scholarshipId.deadline) > new Date()
+    ).length;
+
+    // Calculate total eligible amount from all active scholarships
+    let totalEligibleAmount = 0;
+    if (profile) {
+      const { calculateMatchScore } = require('../services/matcherService');
+      const activeScholarships = await Scholarship.find({ status: 'active', isApproved: true });
+      activeScholarships.forEach(sch => {
+        const matchResult = calculateMatchScore(profile, sch);
+        if (matchResult.isEligible) {
+          totalEligibleAmount += sch.amount;
+        }
+      });
+    }
+    
     res.json({
       completionPercentage: profile ? profile.profileCompletion : 0,
       aiScore: profile ? profile.aiScore : 0,
       stats: {
-        savedCount: 0,
-        appliedCount: 0,
-        upcomingDeadlines: 0,
-        totalEligibleAmount: 0
+        savedCount,
+        appliedCount,
+        upcomingDeadlines,
+        totalEligibleAmount
       }
     });
   } catch (error) {
     console.error('Dashboard error:', error);
     res.status(500).json({ error: 'Failed to retrieve dashboard data' });
+  }
+});
+
+// GET /api/students/applications
+// Get all applications submitted by the current student
+router.get('/applications', async (req, res) => {
+  try {
+    const applications = await Application.find({ studentId: req.user.id })
+      .populate({
+        path: 'scholarshipId',
+        populate: { path: 'providerId', select: 'name orgName' }
+      })
+      .sort({ createdAt: -1 });
+    
+    res.json({ applications });
+  } catch (error) {
+    console.error('Get applications error:', error);
+    res.status(500).json({ error: 'Failed to retrieve applications' });
   }
 });
 

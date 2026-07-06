@@ -22,12 +22,15 @@ import Profile from './pages/student/Profile';
 import Scholarships from './pages/student/Scholarships';
 import ScholarshipDetail from './pages/student/ScholarshipDetail';
 import SavedScholarships from './pages/student/SavedScholarships';
+import Applications from './pages/student/Applications';
+import Settings from './pages/student/Settings';
 
 // Provider Pages
 import ProviderDashboard from './pages/provider/ProviderDashboard';
 import ManageScholarships from './pages/provider/ManageScholarships';
 import CreateScholarship from './pages/provider/CreateScholarship';
 import ApplicationsList from './pages/provider/ApplicationsList';
+import ProviderSettings from './pages/provider/Settings';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -70,6 +73,8 @@ function App() {
                 <Route path="/scholarships" element={<Scholarships />} />
                 <Route path="/scholarships/:id" element={<ScholarshipDetail />} />
                 <Route path="/saved" element={<SavedScholarships />} />
+                <Route path="/applications" element={<Applications />} />
+                <Route path="/settings" element={<Settings />} />
               </Route>
             </Route>
 
@@ -80,6 +85,7 @@ function App() {
                 <Route path="/provider/scholarships" element={<ManageScholarships />} />
                 <Route path="/provider/scholarships/new" element={<CreateScholarship />} />
                 <Route path="/provider/applications" element={<ApplicationsList />} />
+                <Route path="/provider/settings" element={<ProviderSettings />} />
               </Route>
             </Route>
 

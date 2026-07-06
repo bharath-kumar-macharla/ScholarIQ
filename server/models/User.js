@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'provider', 'admin'],
     default: 'student',
   },
+  orgName: {
+    type: String,
+    trim: true,
+  },
   googleId: {
     type: String,
     sparse: true,
@@ -44,6 +48,11 @@ const userSchema = new mongoose.Schema({
   resetTokenExpiry: Date,
   refreshToken: String,
   lastLogin: Date,
+  notifications: {
+    newMatches: { type: Boolean, default: true },
+    applicationUpdates: { type: Boolean, default: true },
+    deadlines: { type: Boolean, default: true }
+  }
 }, {
   timestamps: true,
 });
