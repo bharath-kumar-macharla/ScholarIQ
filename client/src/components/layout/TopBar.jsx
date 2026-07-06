@@ -2,7 +2,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Bell, Search, LogOut, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function TopBar() {
+export default function TopBar({ onMenuClick }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -15,7 +15,10 @@ export default function TopBar() {
     <header className="h-20 bg-[#0d1117]/80 backdrop-blur-xl border-b border-slate-800 flex items-center justify-between px-6 lg:px-8 shrink-0 sticky top-0 z-50">
       
       {/* Mobile Menu Button (Visible only on small screens) */}
-      <button className="md:hidden text-slate-400 hover:text-white transition-colors">
+      <button 
+        onClick={onMenuClick}
+        className="md:hidden text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-800"
+      >
         <Menu size={24} />
       </button>
 
