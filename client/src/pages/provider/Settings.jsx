@@ -202,17 +202,19 @@ export default function Settings() {
               </div>
 
               <div className="space-y-5 max-w-lg">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={passwords.current}
-                    onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                    placeholder="••••••••"
-                    className="w-full bg-[#161b22] border border-slate-700/50 rounded-xl py-3 px-4 text-slate-200 focus:outline-none focus:border-[#06d6a0] transition-colors placeholder:text-slate-700"
-                  />
-                </div>
+                {user?.hasPassword && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={passwords.current}
+                      onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                      placeholder="••••••••"
+                      className="w-full bg-[#161b22] border border-slate-700/50 rounded-xl py-3 px-4 text-slate-200 focus:outline-none focus:border-[#06d6a0] transition-colors placeholder:text-slate-700"
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">New Password</label>

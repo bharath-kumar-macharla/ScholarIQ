@@ -188,7 +188,7 @@ export default function Settings() {
                 <p className="text-slate-400 text-xs">Ensure your account is protected with a secure password configuration.</p>
               </div>
 
-              {user?.googleId && !user?.password && (
+              {user?.googleId && !user?.hasPassword && (
                 <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl text-purple-400 text-sm flex gap-3">
                   <AlertCircle className="flex-shrink-0 mt-0.5" size={18} />
                   <div>
@@ -198,7 +198,7 @@ export default function Settings() {
               )}
 
               <div className="space-y-5 max-w-lg">
-                {(!user?.googleId || user?.password) && (
+                {user?.hasPassword && (
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Password</label>
                     <input

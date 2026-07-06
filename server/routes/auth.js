@@ -397,21 +397,24 @@ router.put('/settings', auth, async (req, res) => {
       };
     }
     
-    // Update password if provided
-    if (currentPassword && newPassword) {
-      if (user.googleId && !user.password) {
-        // User logged in with Google and hasn't set a local password yet
-        user.password = newPassword;
-      } else {
+    // Update password if newPassword is provided
+    if (newPassword) {
+      if (user.password) {
+        // User has a password, must provide and verify current password
+        if (!currentPassword) {
+          return res.status(400).json({ error: 'Current password is required to change password.' });
+        }
         const isMatch = await user.comparePassword(currentPassword);
         if (!isMatch) {
-          return res.status(400).json({ error: 'Incorrect current password' });
+          return res.status(400).json({ error: 'Incorrect current password.' });
         }
-        if (newPassword.length < 6) {
-          return res.status(400).json({ error: 'New password must be at least 6 characters long' });
-        }
-        user.password = newPassword;
       }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+      }
+      
+      user.password = newPassword;
     }
     
     await user.save();
